@@ -61,6 +61,7 @@ func get(conn net.Conn) {
 
 		for _, s := range seriesList {
 			tableRowsString += `<tr>
+				<td>` + fmt.Sprintf("%d", s.id) + `</td>
 				<td>` + s.name + `</td>
 				<td>` + fmt.Sprintf("%d", s.currentEp) + `</td>
 				<td>` + fmt.Sprintf("%d", s.episodes) + `</td>
@@ -76,22 +77,37 @@ func get(conn net.Conn) {
 		<!DOCTYPE html>
 		<html lang="en">
 		<style>
+			body {
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				justify-content: center;
+				font-family: "Arial Narrow";
+				font-size: 24px;
+			}
+			table {
+				border-radius: 5px;
+			}
 			table, th, td {
 				border: 1px solid black;
 				text-align: center;
 			}
+			th, td {
+				padding: 10px;
+			}
 		</style>
 		<head>
 		<meta charset = "UTF-8"/>
-		<title>Series que estoy viendo</title>
+		<title>Mi Tracker de Series</title>
 		</head>
 		<body>
-		<h1>Lista de series que he visto en algún momento o estoy viendo actualmente</h1>
+		<h1>Mi Tracker de Series</h1>
 		<table>
 		<tr>
+		<th>ID</th>
 		<th>Nombre</th>
-		<th>Episodio Actual que Voy/me quedé</th>
-		<th>Cantidad de episodios totales</th>
+		<th>Episodio Actual</th>
+		<th>Episodios Totales</th>
 		` + tableRowsString +
 
 			`
