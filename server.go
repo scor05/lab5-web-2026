@@ -18,8 +18,6 @@ type Serie struct {
 }
 
 func get(conn net.Conn) {
-	db, _ := sql.Open("sqlite", "file:series.db")
-	defer db.Close()
 	defer conn.Close()
 
 	reader := bufio.NewReader(conn)
@@ -42,6 +40,8 @@ func get(conn net.Conn) {
 	}
 
 	if path == "/" {
+		db, _ := sql.Open("sqlite", "file:series.db")
+		defer db.Close()
 		rows, err := db.Query("SELECT * FROM series")
 		if err != nil {
 			log.Print("Error querying for series: ", err)
