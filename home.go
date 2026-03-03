@@ -46,13 +46,17 @@ func handleHome() string {
 	<html lang="en">
 	<style>
 	body {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
 		font-family: "Arial Narrow";
 		font-size: 24px;
 	}
+    .container{
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        height: 100vh;
+    }
 	table {
 		border-radius: 5px;
 	}
@@ -76,6 +80,7 @@ func handleHome() string {
 	<title>Mi Tracker de Series</title>
 	</head>
 	<body>
+    <div class="container">
 	<h1>Mi Tracker de Series</h1>
 	<table>
 	<tr>
@@ -89,6 +94,7 @@ func handleHome() string {
 		`
 	</table>
 	<p><a href="./create">Agregar una Serie</a></p>
+    </div>
 	</body>
 	</html>
 	`
