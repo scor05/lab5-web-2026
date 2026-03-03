@@ -1,0 +1,2 @@
+
+alert("Hello from JS")
