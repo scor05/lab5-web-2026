@@ -27,6 +27,13 @@ func get(conn net.Conn) {
 	log.Print("Path requested: ", path)
 	log.Print("Method: ", method)
 
+	u, err := url.ParseRequestURI(path)
+	rawQuery := ""
+	if err == nil {
+		rawQuery = u.RawQuery
+		path = u.Path
+	}
+
 	// chuparse los headers
 	contentLength := 0
 	for {
@@ -41,16 +48,15 @@ func get(conn net.Conn) {
 	}
 
 	response := ""
-	if path == "/" {
+	if path == "/" && method == "GET" {
 		response = handleHome()
 	}
+
 	if path == "/create" && method == "GET" {
 		response = handleCreate()
 	}
-	if path == "/create" && method == "POST" && contentLength > 0 {
-		db, _ := sql.Open("sqlite", "file:series.db")
-		defer db.Close()
 
+	if path == "/create" && method == "POST" && contentLength > 0 {
 		bytesBody := make([]byte, contentLength)
 		_, err := io.ReadFull(reader, bytesBody)
 		if err != nil {
@@ -58,17 +64,52 @@ func get(conn net.Conn) {
 			response = "HTTP/1.1 400 Bad Request\r\nConnection: close\r\n\r\n"
 		}
 		body := string(bytesBody)
+
 		data, _ := url.ParseQuery(body)
 		name := data.Get("series_name")
 		currentEp := data.Get("current_episode")
 		episodes := data.Get("total_episodes")
 
+		db, _ := sql.Open("sqlite", "file:series.db")
+		defer db.Close()
 		db.Exec("INSERT INTO series VALUES (NULL, ?, ?, ?)", name, currentEp, episodes)
 
 		response = "HTTP/1.1 303 See Other\r\n" +
 			"Location: /\r\n" +
 			"Connection: close \r\n" +
 			"\r\n"
+	}
+
+	if path == "/update/" && method == "POST" {
+		query, _ := url.ParseQuery(rawQuery)
+		idStr := query.Get("id")
+		id, _ := strconv.Atoi(idStr)
+		change := query.Get("change")
+		mult := 1
+		if change == "m" {
+			mult *= -1
+		}
+		log.Print("ID changed: ", id, "; change: ", change)
+
+		db, _ := sql.Open("sqlite", "file:series.db")
+		defer db.Close()
+		var currentEp, episodes int
+		db.QueryRow("SELECT current_episode, total_episodes FROM series WHERE id=?", id).Scan(&currentEp, &episodes)
+
+		newEp := currentEp + mult
+		if newEp+mult < 0 {
+			newEp = 0
+		}
+		if newEp+mult > episodes {
+			newEp = episodes
+		}
+
+		_, err := db.Exec("UPDATE series SET current_episode=? WHERE id=?", newEp, id)
+
+		if err != nil {
+			log.Print("Error updating DB", err)
+		}
+		response = "HTTP/1.1 200 OK\r\nConnection: close\r\n\r\n"
 	}
 
 	_, writer := conn.Write([]byte(response))
