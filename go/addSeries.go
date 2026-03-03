@@ -2,12 +2,14 @@ package main
 
 import (
 	"database/sql"
-	// "fmt"
-	// "log"
+	"log"
 )
 
 func handleCreate() string {
-	db, _ := sql.Open("sqlite", "file:series.db")
+	db, err := sql.Open("sqlite", "file:../series.db")
+	if err != nil {
+		log.Print("Error opening db: ", err)
+	}
 	defer db.Close()
 
 	response := "HTTP/1.1 200 OK\r\n" +

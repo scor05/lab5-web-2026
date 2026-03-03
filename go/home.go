@@ -7,7 +7,11 @@ import (
 )
 
 func handleHome() string {
-	db, _ := sql.Open("sqlite", "file:series.db")
+	db, err := sql.Open("sqlite", "file:../series.db")
+	if err != nil {
+		log.Print("Error opening db:", err)
+	}
+
 	defer db.Close()
 	rows, err := db.Query("SELECT * FROM series")
 	if err != nil {
@@ -68,7 +72,7 @@ func handleHome() string {
         }
     }
     </script>`
-	// LOS RESPONSE VAN: http/ver, responseID, text
+
 	response := "HTTP/1.1 200 OK\r\n"
 	headers := "Content-Type: text/html\r\n" +
 		"\r\n" +

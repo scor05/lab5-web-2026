@@ -70,9 +70,16 @@ func get(conn net.Conn) {
 		currentEp := data.Get("current_episode")
 		episodes := data.Get("total_episodes")
 
-		db, _ := sql.Open("sqlite", "file:series.db")
+		db, err := sql.Open("sqlite", "file:../series.db")
+		if err != nil {
+			log.Print("Error opening database: ", err)
+		}
+
 		defer db.Close()
-		db.Exec("INSERT INTO series VALUES (NULL, ?, ?, ?)", name, currentEp, episodes)
+		_, err1 := db.Exec("INSERT INTO series VALUES (NULL, ?, ?, ?)", name, currentEp, episodes)
+		if err1 != nil {
+			log.Print("Error inserting into DB: ", err)
+		}
 
 		response = "HTTP/1.1 303 See Other\r\n" +
 			"Location: /\r\n" +
@@ -91,10 +98,16 @@ func get(conn net.Conn) {
 		}
 		log.Print("ID changed: ", id, "; change: ", change)
 
-		db, _ := sql.Open("sqlite", "file:series.db")
+		db, err := sql.Open("sqlite", "file:../series.db")
+		if err != nil {
+			log.Print("Error opening DB: ", err)
+		}
 		defer db.Close()
 		var currentEp, episodes int
-		db.QueryRow("SELECT current_episode, total_episodes FROM series WHERE id=?", id).Scan(&currentEp, &episodes)
+		err = db.QueryRow("SELECT current_episode, total_episodes FROM series WHERE id=?", id).Scan(&currentEp, &episodes)
+		if err != nil {
+			log.Print("Error in queryrow: ", err)
+		}
 
 		newEp := currentEp + mult
 		if newEp+mult < 0 {
@@ -104,9 +117,9 @@ func get(conn net.Conn) {
 			newEp = episodes
 		}
 
-		_, err := db.Exec("UPDATE series SET current_episode=? WHERE id=?", newEp, id)
+		_, err2 := db.Exec("UPDATE series SET current_episode=? WHERE id=?", newEp, id)
 
-		if err != nil {
+		if err2 != nil {
 			log.Print("Error updating DB", err)
 		}
 		response = "HTTP/1.1 200 OK\r\nConnection: close\r\n\r\n"
