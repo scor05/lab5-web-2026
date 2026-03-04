@@ -33,9 +33,13 @@ func handleHome() string {
 	var buttonsDown string
 	var deleteButtons string
 	for _, s := range seriesList {
+		status := ""
+		if s.currentEp == s.episodes {
+			status = "✅"
+		}
 		tableRowsString += `<tr id="row` + fmt.Sprintf("%d", s.id) + `">
 		<td>` + fmt.Sprintf("%d", s.id) + `</td>
-		<td>` + s.name + `</td>
+		<td id='name` + fmt.Sprintf("%d", s.id) + `'>` + s.name + status + `</td>
         <td id='ep` + fmt.Sprintf("%d", s.id) + `'>` + fmt.Sprintf("%d", s.currentEp) + `</td>
 		<td id='tot` + fmt.Sprintf("%d", s.id) + `'>` + fmt.Sprintf("%d", s.episodes) + `</td>
 		<td> <progress id='p` + fmt.Sprintf("%d", s.id) + `' value='` + fmt.Sprintf("%d", s.currentEp) + `' max='` + fmt.Sprintf("%d", s.episodes) + `'></progress>
@@ -58,6 +62,11 @@ func handleHome() string {
         if ((current + 1) <= totalEp){
             textElement.innerText = String(current + 1);
             progressElement.value = String(current + 1);
+
+            const nameElement = document.getElementById("name" + id);
+            if ((current + 1) == totalEp && !nameElement.innerText.includes("✅")){
+                nameElement.innerText = nameElement.innerText + "✅";
+            }
         }
     }
     window.prevEpisode = async function prevEpisode(id) {
@@ -71,6 +80,11 @@ func handleHome() string {
         if ((current - 1) >= 0){
             textElement.innerText = String(current - 1);
             progressElement.value = String(current - 1);
+
+            const nameElement = document.getElementById("name" + id);
+            if ((current - 1) < totalEp && nameElement.innerText.includes("✅")){
+                nameElement.innerText = nameElement.innerText.replaceAll("✅", "").trim();
+            }
         }
     }
     window.deleteSeries = async function deleteEpisode(id) {
