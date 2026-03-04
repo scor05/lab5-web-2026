@@ -4,10 +4,10 @@ En este repositorio se creó un servidor simple de go para mostrar datos guardad
 base de datos en formato de HTML.
 
 El servidor se encuentra en `/go/server.go`, junto con todos los otros archivos que contienen
-los handlers para todos los métodos que usa el server.
+los handlers para todos los métodos que usa el server (las funciones están dentro de server.go)
 
-Para correr el servidor, simplemente correr en la terminal (dentro de `/go/server.go`) el comando
-`go run .` y empezará a escuchar en el puerto 8080 y se mostrará ahí la tabla con la información dada.
+Para correr el servidor, simplemente correr en la terminal (dentro de la carpeta `/go/`) el comando
+`go run .` y empezará a escuchar en el puerto 8080.
 
 ## Challenges Implementados
 De todos los challenges que estaban en el pool, implementé los siguientes: 
