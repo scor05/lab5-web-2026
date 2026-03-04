@@ -32,6 +32,8 @@ func handleHome() string {
 	var buttonsUp string
 	var buttonsDown string
 	var deleteButtons string
+	var editButtons string
+
 	for _, s := range seriesList {
 		status := ""
 		if s.currentEp == s.episodes {
@@ -48,6 +50,7 @@ func handleHome() string {
 		buttonsDown += `<button id="dec` + fmt.Sprintf("%d", s.id) + `" onclick="prevEpisode(` + fmt.Sprintf("%d", s.id) + `)">-1</button>`
 		buttonsUp += `<button id="inc` + fmt.Sprintf("%d", s.id) + `" onclick="nextEpisode(` + fmt.Sprintf("%d", s.id) + `)">+1</button>`
 		deleteButtons += `<button id="del` + fmt.Sprintf("%d", s.id) + `" onclick="deleteSeries(` + fmt.Sprintf("%d", s.id) + `)">Eliminar</button>`
+		editButtons += `<a href="/update/?id="` + fmt.Sprintf("%d", s.id) + `"><button id="edit` + fmt.Sprintf("%d", s.id) + `">Editar</button></a>`
 	}
 
 	script := `<script type="module">
@@ -105,6 +108,10 @@ func handleHome() string {
             deleteElement.remove();
         }
     }
+    window.editSeries = async function editSeries(id) {
+        const url = "/update/?id=" + id
+        const response = await fetch(url, { method: "GET" } )
+    }
     </script>`
 
 	response := "HTTP/1.1 200 OK\r\n"
@@ -136,6 +143,12 @@ func handleHome() string {
 	th, td {
 		padding: 10px;
 	}
+    tbody > tr:first-child{
+        background-color: royalblue;
+    }
+    table:first-child{ 
+        background-color: powderblue;
+    }
     tr:nth-of-type(even), button:nth-of-type(odd){
 		background-color: aqua;
 	}
@@ -174,6 +187,10 @@ func handleHome() string {
         display: flex;
         flex-direction: column;
     }
+    .editBtnDiv {
+        display: flex;
+        flex-direction: column;
+    }
 
 	</style>
 	<head>
@@ -205,6 +222,9 @@ func handleHome() string {
     </div>
     <div class="deleteBtnDiv">
     ` + deleteButtons + `
+    </div>
+    <div class="editBtnDiv">
+    ` + editButtons + `
     </div>
     </div>
     </div>

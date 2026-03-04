@@ -80,6 +80,22 @@ func get(conn net.Conn) {
 		}
 
 		response = handleDelete(query)
+
+	case path == "/update/" && method == "GET":
+		query, err := url.ParseQuery(rawQuery)
+		if err != nil {
+			log.Print("Error parsing query:", err)
+		}
+
+		response = handleUpdateGET(query)
+
+	case path == "/update/" && method == "UPDATE":
+		query, err := url.ParseQuery(rawQuery)
+		if err != nil {
+			log.Print("Error parsing query:", err)
+		}
+
+		response = handleUpdateUPDATE(query)
 	}
 
 	_, writer := conn.Write([]byte(response))
