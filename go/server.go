@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"database/sql"
 	"io"
 	"log"
 	_ "modernc.org/sqlite"
@@ -48,15 +47,14 @@ func get(conn net.Conn) {
 	}
 
 	response := ""
-	if path == "/" && method == "GET" {
+
+	switch {
+	case path == "/" && method == "GET":
 		response = handleHome()
-	}
-
-	if path == "/create" && method == "GET" {
+	case path == "/create" && method == "GET":
 		response = handleCreate()
-	}
 
-	if path == "/create" && method == "POST" && contentLength > 0 {
+	case path == "/create" && method == "POST" && contentLength > 0:
 		bytesBody := make([]byte, contentLength)
 		_, err := io.ReadFull(reader, bytesBody)
 		if err != nil {
@@ -65,64 +63,23 @@ func get(conn net.Conn) {
 		}
 		body := string(bytesBody)
 
-		data, _ := url.ParseQuery(body)
-		name := data.Get("series_name")
-		currentEp := data.Get("current_episode")
-		episodes := data.Get("total_episodes")
+		response = handleCreatePOST(body)
 
-		db, err := sql.Open("sqlite", "file:../series.db")
+	case path == "/update/" && method == "POST":
+		query, err := url.ParseQuery(rawQuery)
 		if err != nil {
-			log.Print("Error opening database: ", err)
+			log.Print("Error parsing query:", err)
 		}
 
-		defer db.Close()
-		_, err1 := db.Exec("INSERT INTO series VALUES (NULL, ?, ?, ?)", name, currentEp, episodes)
-		if err1 != nil {
-			log.Print("Error inserting into DB: ", err)
-		}
+		response = handleUpdatePOST(query)
 
-		response = "HTTP/1.1 303 See Other\r\n" +
-			"Location: /\r\n" +
-			"Connection: close \r\n" +
-			"\r\n"
-	}
-
-	if path == "/update/" && method == "POST" {
-		query, _ := url.ParseQuery(rawQuery)
-		idStr := query.Get("id")
-		id, _ := strconv.Atoi(idStr)
-		change := query.Get("change")
-		mult := 1
-		if change == "m" {
-			mult *= -1
-		}
-		log.Print("ID changed: ", id, "; change: ", change)
-
-		db, err := sql.Open("sqlite", "file:../series.db")
+	case path == "/delete/" && method == "DELETE":
+		query, err := url.ParseQuery(rawQuery)
 		if err != nil {
-			log.Print("Error opening DB: ", err)
-		}
-		defer db.Close()
-		var currentEp, episodes int
-		err = db.QueryRow("SELECT current_episode, total_episodes FROM series WHERE id=?", id).Scan(&currentEp, &episodes)
-		if err != nil {
-			log.Print("Error in queryrow: ", err)
+			log.Print("Error parsing query:", err)
 		}
 
-		newEp := currentEp + mult
-		if newEp+mult < 0 {
-			newEp = 0
-		}
-		if newEp+mult > episodes {
-			newEp = episodes
-		}
-
-		_, err2 := db.Exec("UPDATE series SET current_episode=? WHERE id=?", newEp, id)
-
-		if err2 != nil {
-			log.Print("Error updating DB", err)
-		}
-		response = "HTTP/1.1 200 OK\r\nConnection: close\r\n\r\n"
+		response = handleDelete(query)
 	}
 
 	_, writer := conn.Write([]byte(response))

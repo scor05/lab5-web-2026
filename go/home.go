@@ -31,8 +31,9 @@ func handleHome() string {
 	var tableRowsString string
 	var buttonsUp string
 	var buttonsDown string
+	var deleteButtons string
 	for _, s := range seriesList {
-		tableRowsString += `<tr>
+		tableRowsString += `<tr id="row` + fmt.Sprintf("%d", s.id) + `">
 		<td>` + fmt.Sprintf("%d", s.id) + `</td>
 		<td>` + s.name + `</td>
         <td id='ep` + fmt.Sprintf("%d", s.id) + `'>` + fmt.Sprintf("%d", s.currentEp) + `</td>
@@ -40,8 +41,9 @@ func handleHome() string {
 		<td> <progress id='p` + fmt.Sprintf("%d", s.id) + `' value='` + fmt.Sprintf("%d", s.currentEp) + `' max='` + fmt.Sprintf("%d", s.episodes) + `'></progress>
 		</tr>`
 
-		buttonsDown += `<button onclick="prevEpisode(` + fmt.Sprintf("%d", s.id) + `)">-1</button>`
-		buttonsUp += `<button onclick="nextEpisode(` + fmt.Sprintf("%d", s.id) + `)">+1</button>`
+		buttonsDown += `<button id="dec` + fmt.Sprintf("%d", s.id) + `" onclick="prevEpisode(` + fmt.Sprintf("%d", s.id) + `)">-1</button>`
+		buttonsUp += `<button id="inc` + fmt.Sprintf("%d", s.id) + `" onclick="nextEpisode(` + fmt.Sprintf("%d", s.id) + `)">+1</button>`
+		deleteButtons += `<button id="del` + fmt.Sprintf("%d", s.id) + `" onclick="deleteSeries(` + fmt.Sprintf("%d", s.id) + `)">Eliminar</button>`
 	}
 
 	script := `<script type="module">
@@ -69,6 +71,24 @@ func handleHome() string {
         if ((current - 1) >= 0){
             textElement.innerText = String(current - 1);
             progressElement.value = String(current - 1);
+        }
+    }
+    window.deleteSeries = async function deleteEpisode(id) {
+        const deleteConfirm = confirm("Estás seguro de que quieres eliminar esa serie?")
+
+        if (deleteConfirm){
+            const url = "/delete/?id=" + id;
+            const response = await fetch(url, { method: "DELETE" } );
+
+            const seriesRowElement = document.getElementById("row" + id);
+            const incrementElement = document.getElementById("inc" + id);
+            const decrementElement = document.getElementById("dec" + id);
+            const deleteElement = document.getElementById("del" + id);
+
+            seriesRowElement.remove();
+            incrementElement.remove();
+            decrementElement.remove();
+            deleteElement.remove();
         }
     }
     </script>`
@@ -136,6 +156,10 @@ func handleHome() string {
         display: flex;
         flex-direction: column;
     }
+    .deleteBtnDiv {
+        display: flex;
+        flex-direction: column;
+    }
 
 	</style>
 	<head>
@@ -164,6 +188,9 @@ func handleHome() string {
     </div>
     <div class="downBtnDiv">
     ` + buttonsDown + `
+    </div>
+    <div class="deleteBtnDiv">
+    ` + deleteButtons + `
     </div>
     </div>
     </div>
