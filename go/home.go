@@ -50,7 +50,7 @@ func handleHome() string {
 		buttonsDown += `<button id="dec` + fmt.Sprintf("%d", s.id) + `" onclick="prevEpisode(` + fmt.Sprintf("%d", s.id) + `)">-1</button>`
 		buttonsUp += `<button id="inc` + fmt.Sprintf("%d", s.id) + `" onclick="nextEpisode(` + fmt.Sprintf("%d", s.id) + `)">+1</button>`
 		deleteButtons += `<button id="del` + fmt.Sprintf("%d", s.id) + `" onclick="deleteSeries(` + fmt.Sprintf("%d", s.id) + `)">Eliminar</button>`
-		editButtons += `<a href="/update/?id="` + fmt.Sprintf("%d", s.id) + `"><button id="edit` + fmt.Sprintf("%d", s.id) + `">Editar</button></a>`
+		editButtons += `<button id="edit` + fmt.Sprintf("%d", s.id) + `"><a href="/update/?id=` + fmt.Sprintf("%d", s.id) + `">Editar</a></button>`
 	}
 
 	script := `<script type="module">
@@ -190,8 +190,22 @@ func handleHome() string {
     .editBtnDiv {
         display: flex;
         flex-direction: column;
+        align-items: flex-start;
     }
-
+    .editBtnDiv > a:first-child button{
+        margin-top: 50px;
+    }
+    .editBtnDiv > a {
+        display: block; 
+        height: 30px;
+        line-height: normal;
+    }
+    .editBtnDiv > a:nth-of-type(odd) button {
+        background-color: aqua;
+    }
+    .editBtnDiv > a:nth-of-type(even) button {
+        background-color: cadetBlue;
+    }
 	</style>
 	<head>
 	<meta charset = "UTF-8"/>

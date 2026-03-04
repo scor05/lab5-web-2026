@@ -71,7 +71,34 @@ func get(conn net.Conn) {
 			log.Print("Error parsing query:", err)
 		}
 
-		response = handleUpdatePOST(query)
+		// el método POST lo puse para para incrementar/decrementar y para actualizar series
+		// para diferenciar entre ambas está este query
+		temp := query.Get("change")
+		if temp == "p" || temp == "m" {
+			response = handleUpdatePOST(query)
+		} else {
+			if contentLength <= 0 {
+				response = "HTTP/1.1 400 Bad Request\r\nConnection: close\r\n\r\n"
+				break
+			}
+
+			bytesBody := make([]byte, contentLength)
+			_, err := io.ReadFull(reader, bytesBody)
+			if err != nil {
+				log.Print("Error leyendo body: ", err)
+				response = "HTTP/1.1 400 Bad Request\r\nConnection: close\r\n\r\n"
+				break
+			}
+
+			body := string(bytesBody)
+			formVals, err := url.ParseQuery(body)
+			if err != nil {
+				log.Print("Error parsing body:", err)
+				response = "HTTP/1.1 400 Bad Request\r\nConnection: close\r\n\r\n"
+				break
+			}
+			response = handleUpdateUPDATE(formVals)
+		}
 
 	case path == "/delete/" && method == "DELETE":
 		query, err := url.ParseQuery(rawQuery)
@@ -88,14 +115,6 @@ func get(conn net.Conn) {
 		}
 
 		response = handleUpdateGET(query)
-
-	case path == "/update/" && method == "UPDATE":
-		query, err := url.ParseQuery(rawQuery)
-		if err != nil {
-			log.Print("Error parsing query:", err)
-		}
-
-		response = handleUpdateUPDATE(query)
 	}
 
 	_, writer := conn.Write([]byte(response))

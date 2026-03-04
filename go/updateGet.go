@@ -46,6 +46,7 @@ func handleUpdateGET(query url.Values) string {
                         width: 100vw;
                         height: 100vh;
                         display: flex;
+                        flex-direction: column;
                         justify-content: center;
                         align-items: center;
                     }
@@ -79,19 +80,17 @@ func handleUpdateGET(query url.Values) string {
                 </style>
                 <div class="container">
                     <h1>Editando serie: ` + serie.name + `</h1>
-                    <p>Información actual:</p>
-                    <p>ID: ` + fmt.Sprintf("%d", serie.id) + `</p>
-                    <p>Episodio Actual: ` + fmt.Sprintf("%d", serie.currentEp) + `</p>
-                    <p>Episodios Totales: ` + fmt.Sprintf("%d", serie.episodes) + `</p>
-                    <form id="editar" method="UPDATE" action="/update/">
+                    <p>Información actual: ID: ` + fmt.Sprintf("%d", serie.id) + ` | Episodio Actual: ` + fmt.Sprintf("%d", serie.currentEp) + ` | Episodios Totales: ` + fmt.Sprintf("%d", serie.episodes) + `</p>
+                    <form id="editar" method="POST" action="/update/">
                     <p>ID de la serie</p>
-                    <input type="number" name="id" min="0" value="` + fmt.Sprintf("%d", serie.id) + ` required>
-                    <p>Nombre nuevo de la serie</p>
-                    <input type="text" name="series_name" value="` + serie.name + ` required>
+                    <input type="number" name="id" min="0" value="` + fmt.Sprintf("%d", serie.id) + `" required>
+                    <p>Nombre nuevo</p>
+                    <input type="text" name="series_name" value="` + serie.name + `" required>
                     <p>Episodio actual</p>
                     <input type="number" name="current_episode" min="1" value="` + fmt.Sprintf("%d", serie.currentEp) + `" required>
                     <p>Total de Episodios</p>
                     <input type="number" name="total_episodes" min="1" value="` + fmt.Sprintf("%d", serie.episodes) + `" required>
+                    <input type="hidden" name="original_id" value="` + fmt.Sprintf("%d", serie.id) + `">
                     </form>
                     <button type="submit" form="editar">Guardar Cambios</button>
                     <p class="back"><a href="../">Regresar</a></p> 
